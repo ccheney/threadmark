@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>Threadmark Options</title>
+	<style>
+		body {
+			font-family: system-ui, sans-serif;
+			padding: 20px;
+			max-width: 600px;
+			margin: 0 auto;
+		}
+
+		.status {
+			padding: 10px;
+			border-radius: 5px;
+			margin-bottom: 20px;
+		}
+
+		.granted {
+			background-color: #d4edda;
+			color: #155724;
+		}
+
+		.denied {
+			background-color: #f8d7da;
+			color: #721c24;
+		}
+
+		button {
+			padding: 8px 16px;
+			cursor: pointer;
+		}
+	</style>
+</head>
+
+<body>
+	<h1>Threadmark Settings</h1>
+
+	<div
+		id="storage-status"
+		class="status"
+	>
+		Checking storage persistence...
+	</div>
+
+	<div
+		class="settings-section"
+		style="margin-top: 20px; padding: 10px; background: #f9f9f9; border-radius: 5px;"
+	>
+		<label style="display: flex; align-items: center; cursor: pointer;">
+			<input
+				type="checkbox"
+				id="auto-highlight"
+				style="margin-right: 10px;"
+			>
+			Auto-highlight bookmarks when opening page (Future feature)
+		</label>
+	</div>
+
+	<button
+		id="request-persist"
+		style="margin-top: 20px;"
+	>Request Persistent Storage</button>
+
+	<script src="options.js"></script>
+</body>
+
+</html>

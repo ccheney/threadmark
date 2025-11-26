@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+	<title>Threadmark Side Panel</title>
+	<style>
+		body {
+			font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+			margin: 0;
+			padding: 0;
+			background-color: #f7f7f8;
+			color: #343541;
+		}
+
+		.header {
+			padding: 12px 16px;
+			background: white;
+			border-bottom: 1px solid #e5e5e5;
+			position: sticky;
+			top: 0;
+			z-index: 10;
+		}
+
+		.header h1 {
+			margin: 0;
+			font-size: 16px;
+			font-weight: 600;
+		}
+
+        #search-input {
+            width: 100%;
+            margin-top: 8px;
+            padding: 6px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-family: inherit;
+        }
+
+        #filter-container {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        #filter-date,
+        #filter-chat {
+            flex: 1;
+            font-size: 12px;
+            padding: 4px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: white;
+            font-family: inherit;
+        }
+
+        .action-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 8px;
+        }
+
+        #show-all-btn,
+        #options-toggle-btn {
+            font-size: 12px;
+            padding: 4px 8px;
+            background: transparent;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: inherit;
+            color: inherit;
+        }
+
+        #options-toggle-btn {
+            display: flex;
+            align-items: center;
+        }
+
+		#bookmark-list {
+			padding: 0;
+			margin: 0;
+			list-style: none;
+		}
+
+		.bookmark-item {
+			padding: 12px 16px;
+			border-bottom: 1px solid #eee;
+			background: white;
+			cursor: pointer;
+			transition: background 0.1s;
+		}
+
+		.bookmark-item:hover {
+			background: #f0f0f0;
+		}
+
+		.bookmark-text {
+			font-size: 14px;
+			line-height: 1.4;
+			margin-bottom: 4px;
+			display: -webkit-box;
+			-webkit-line-clamp: 3;
+			-webkit-box-orient: vertical;
+			overflow: hidden;
+		}
+
+		        .bookmark-meta {
+					font-size: 11px;
+					color: #8e8ea0;
+					display: flex;
+					justify-content: space-between;
+				}
+		        
+		        .bookmark-tag {
+		            background: #eee;
+		            padding: 2px 6px;
+		            border-radius: 4px;
+		            font-size: 10px;
+		            margin-right: 4px;
+		        }
+		
+				.empty-state {
+					padding: 40px 20px;
+					text-align: center;
+					color: #8e8ea0;
+					font-size: 14px;
+				}
+		
+		        #options-panel {
+		            display: none;
+		            padding: 10px;
+		            background: #f9f9f9;
+		            border-bottom: 1px solid #eee;
+		        }
+		
+		        /* Options Panel Styles */
+		        .option-label {
+		            display: flex;
+		            justify-content: space-between;
+		            align-items: center;
+		            font-size: 12px;
+		            margin-bottom: 10px;
+		            width: 100%;
+		        }
+		        .clickable {
+		            cursor: pointer;
+		        }
+		        
+		        .btn-danger-outline {
+		            width: 100%;
+		            padding: 6px;
+		            background: transparent;
+		            border: 1px solid #d93025;
+		            color: #d93025;
+		            border-radius: 4px;
+		            cursor: pointer;
+		            font-size: 12px;
+		            font-family: inherit;
+		        }
+		        .btn-danger-solid {
+		            width: 100%;
+		            padding: 6px;
+		            background: #d93025;
+		            border: 1px solid #d93025;
+		            color: white;
+		            border-radius: 4px;
+		            cursor: pointer;
+		            font-size: 12px;
+		            font-family: inherit;
+		        }
+		
+		        .btn-danger-outline:hover {
+		            background-color: rgba(217, 48, 37, 0.05);
+		        }
+		        .btn-danger-solid:hover {
+		            background-color: #b0271f;
+		        }
+		
+		        /* Dark Mode Support */
+		        body.theme-dark {
+		            background-color: #343541;
+		            color: #ECECF1;
+		        }
+		        body.theme-dark .header {
+		            background-color: #343541;
+		            border-bottom: 1px solid #565869;
+		        }
+		        body.theme-dark .header h1 {
+		            color: #ECECF1;
+		        }
+		        body.theme-dark #search-input {
+		            background-color: #40414F;
+		            border-color: #565869;
+		            color: #fff;
+		        }
+		        body.theme-dark #filter-date,
+		        body.theme-dark #filter-chat {
+		            background-color: #40414F;
+		            border-color: #565869;
+		            color: #fff;
+		        }
+		        body.theme-dark #show-all-btn,
+		        body.theme-dark #options-toggle-btn {
+		            border-color: #565869;
+		            color: #ECECF1;
+		        }
+		        body.theme-dark #options-toggle-btn svg {
+		            stroke: currentColor; /* Use inherited color */
+		        }
+		
+		        body.theme-dark .bookmark-item {
+		            background-color: #343541;
+		            border-bottom: 1px solid #565869;
+		            color: #ECECF1;
+		        }
+		        body.theme-dark .bookmark-item:hover {
+		            background-color: #2A2B32;
+		        }
+		        body.theme-dark .bookmark-meta {
+		            color: #8e8ea0;
+		        }
+		        body.theme-dark .bookmark-tag {
+		            background-color: #40414F;
+		            color: #ECECF1;
+		        }
+		        body.theme-dark #options-panel {
+		            background-color: #202123;
+		            border-bottom: 1px solid #565869;
+		        }
+		        body.theme-dark #theme-select {
+		            background-color: #40414F;
+		            color: #fff;
+		            border-color: #565869;
+		        }        
+        body.theme-dark .btn-danger-outline {
+            color: #ff6b6b;
+            border-color: #ff6b6b;
+        }
+        body.theme-dark .btn-danger-outline:hover {
+            background-color: rgba(255, 107, 107, 0.1);
+        }
+        /* Solid red button stays red in dark mode, maybe slightly muted/brighter if needed, but standard red is usually okay. */
+	</style>
+</head>
+
+<body>
+	<div class="header">
+		<h1>Threadmark</h1>
+		<input
+			type="text"
+			id="search-input"
+			placeholder="Search bookmarks..."
+		>
+        <div id="filter-container">
+            <select id="filter-date">
+                <option value="all">All Time</option>
+                <option value="today">Today</option>
+                <option value="7days">Last 7 Days</option>
+                <option value="30days">Last 30 Days</option>
+            </select>
+            <select id="filter-chat">
+                <option value="all">All Chats</option>
+                <!-- Populated dynamically -->
+            </select>
+        </div>
+		<div class="action-row">
+			<button id="show-all-btn">Show Bookmarks</button>
+            <div style="flex-grow: 1;"></div>
+            <button id="options-toggle-btn" title="Settings">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
+            </button>
+		</div>
+        <div id="options-panel">
+            <label class="option-label">
+                Theme
+                <select id="theme-select">
+                    <option value="system">System</option>
+                    <option value="light">Light</option>
+                    <option value="dark">Dark</option>
+                </select>
+            </label>
+            <label class="option-label clickable">
+                Auto-highlight on load
+                <input type="checkbox" id="auto-highlight-check">
+            </label>
+            <div style="margin-top: 10px; border-top: 1px solid #eee; padding-top: 10px; display: flex; flex-direction: column; gap: 8px;">
+                <button id="purge-btn" class="btn-danger-outline">
+                    Purge Bookmarks for Current Page
+                </button>
+                <button id="purge-all-btn" class="btn-danger-solid">
+                    Purge ALL Bookmarks (Global)
+                </button>
+            </div>
+        </div>
+	</div>
+	<ul id="bookmark-list">
+		<!-- Bookmarks will be injected here -->
+	</ul>
+	<div
+		id="empty-state"
+		class="empty-state"
+		style="display: none;"
+	>
+		No bookmarks yet. Select text in ChatGPT to bookmark it.
+	</div>
+	<script src="sidepanel.js"></script>
+</body>
+
+</html>

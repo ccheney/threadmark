@@ -12,6 +12,7 @@
 	"scripts": {
 		"build": "bun run scripts/build.ts",
 		"dev": "bun run scripts/build.ts --watch",
+		"package": "bun run scripts/build.ts && bun run scripts/package.ts",
 		"check": "biome check .",
 		"fix": "biome check --write .",
 		"typecheck": "tsc --noEmit"

@@ -1,10 +1,16 @@
 {
 	"manifest_version": 3,
 	"name": "Threadmark",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"description": "Bookmark, highlight, and organize specific text snippets within ChatGPT conversations. Never lose a golden answer again.",
-	"permissions": ["activeTab", "sidePanel", "storage"],
-	"host_permissions": ["*://*.chatgpt.com/*"],
+	"permissions": [
+		"activeTab",
+		"sidePanel",
+		"storage"
+	],
+	"host_permissions": [
+		"*://*.chatgpt.com/*"
+	],
 	"background": {
 		"service_worker": "background.js"
 	},
@@ -19,8 +25,12 @@
 	},
 	"content_scripts": [
 		{
-			"matches": ["*://*.chatgpt.com/*"],
-			"js": ["features/capture/content.js"]
+			"matches": [
+				"*://*.chatgpt.com/*"
+			],
+			"js": [
+				"features/capture/content.js"
+			]
 		}
 	]
 }

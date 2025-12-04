@@ -1,6 +1,7 @@
 import { findAndHighlight, findRanges } from "./highlighter";
 
 let bubbleElement: HTMLElement | null = null;
+let escapeHandler: ((e: KeyboardEvent) => void) | null = null;
 
 export function initBubbleListener() {
 	document.addEventListener("mouseup", handleSelectionChange);
@@ -137,9 +138,21 @@ function showBubble(selection: Selection, text: string) {
 
 	document.body.appendChild(bubble);
 	bubbleElement = bubble;
+
+	// Add escape key listener
+	escapeHandler = (e: KeyboardEvent) => {
+		if (e.key === "Escape") {
+			removeBubble();
+		}
+	};
+	document.addEventListener("keydown", escapeHandler);
 }
 
 function removeBubble() {
+	if (escapeHandler) {
+		document.removeEventListener("keydown", escapeHandler);
+		escapeHandler = null;
+	}
 	if (bubbleElement) {
 		bubbleElement.remove();
 		bubbleElement = null;

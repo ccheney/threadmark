@@ -49,11 +49,7 @@ await cp(
 	"dist/features/sidepanel/sidepanel.html",
 );
 
-// Generate Icons
-const proc = Bun.spawn(["python3", "scripts/generate_icons.py"], {
-	stdout: "inherit",
-	stderr: "inherit",
-});
-await proc.exited;
+// Copy static assets (icons, logos, etc.)
+await cp("assets", "dist/assets", { recursive: true });
 
 console.log("Build complete! Load 'dist' folder in Chrome.");

@@ -20,6 +20,22 @@ function handleSelectionChange() {
 		return;
 	}
 
+	// Don't show bubble when selecting in input fields
+	const activeElement = document.activeElement;
+	if (
+		activeElement instanceof HTMLInputElement ||
+		activeElement instanceof HTMLTextAreaElement ||
+		activeElement?.getAttribute("contenteditable") === "true"
+	) {
+		return;
+	}
+
+	// Only show bubble when selecting within chat messages (article elements in composer-parent)
+	const anchorNode = selection.anchorNode;
+	if (!anchorNode?.parentElement?.closest("article")) {
+		return;
+	}
+
 	const text = selection.toString().trim();
 	if (text.length > 0) {
 		showBubble(selection, text);
@@ -142,6 +158,7 @@ function showBubble(selection: Selection, text: string) {
 	// Add escape key listener
 	escapeHandler = (e: KeyboardEvent) => {
 		if (e.key === "Escape") {
+			window.getSelection()?.removeAllRanges();
 			removeBubble();
 		}
 	};

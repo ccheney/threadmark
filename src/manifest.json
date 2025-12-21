@@ -1,7 +1,7 @@
 {
 	"manifest_version": 3,
 	"name": "Threadmark",
-	"version": "1.0.1",
+	"version": "1.0.2",
 	"description": "Bookmark, highlight, and organize specific text snippets within ChatGPT conversations. Never lose a golden answer again.",
 	"permissions": [
 		"activeTab",

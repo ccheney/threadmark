@@ -1,6 +1,10 @@
 import { urlsReferToSameThread } from "../../shared/chatgpt";
 import { initDB } from "../../shared/db";
-import { loadBookmarks, syncSidepanelWithTab } from "./modules/bookmarks";
+import {
+	loadBookmarks,
+	setBookmarkScope,
+	syncSidepanelWithTab,
+} from "./modules/bookmarks";
 import { initOptionsPanel } from "./modules/options";
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -49,7 +53,31 @@ document.addEventListener("DOMContentLoaded", async () => {
 		filterChat.addEventListener("change", () => loadBookmarks());
 	}
 
-	// Show All Button
+	// Scope Switch
+	document
+		.getElementById("scope-current")
+		?.addEventListener("click", () => setBookmarkScope("current"));
+	document
+		.getElementById("scope-library")
+		?.addEventListener("click", () => setBookmarkScope("library"));
+	document
+		.getElementById("back-to-current-btn")
+		?.addEventListener("click", () => setBookmarkScope("current"));
+
+	// Filter Popover
+	const filterPopover = document.getElementById("filter-popover");
+	const filterToggleBtn = document.getElementById("filter-toggle-btn");
+	if (filterPopover && filterToggleBtn) {
+		filterToggleBtn.addEventListener("click", () => {
+			filterPopover.hidden = !filterPopover.hidden;
+			filterToggleBtn.setAttribute(
+				"aria-expanded",
+				String(!filterPopover.hidden),
+			);
+		});
+	}
+
+	// Highlight All Button
 	document
 		.getElementById("show-all-btn")
 		?.addEventListener("click", async () => {

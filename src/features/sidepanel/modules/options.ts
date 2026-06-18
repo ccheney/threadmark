@@ -4,14 +4,11 @@ import {
 	saveSettings,
 } from "../../settings/storage";
 import { purgeAllBookmarks, purgePageBookmarks } from "./bookmarks";
-import { applyTheme, updateShowAllButton } from "./theme";
+import { applyTheme } from "./theme";
 
 export async function initOptionsPanel() {
 	const optionsPanel = document.getElementById("options-panel");
 	const optionsBtn = document.getElementById("options-toggle-btn");
-	const showAllBtn = document.getElementById(
-		"show-all-btn",
-	) as HTMLButtonElement;
 	const autoHighlightCheck = document.getElementById(
 		"auto-highlight-check",
 	) as HTMLInputElement;
@@ -32,15 +29,15 @@ export async function initOptionsPanel() {
 
 		themeSelect.value = settings.theme || "system";
 
-		// Initial button state
-		if (showAllBtn) updateShowAllButton(showAllBtn, true);
-
 		applyTheme(settings.theme || "system");
+
+		optionsPanel.hidden = true;
+		optionsBtn.setAttribute("aria-expanded", "false");
 
 		// Toggle panel
 		optionsBtn.addEventListener("click", () => {
-			const isHidden = optionsPanel.style.display === "none";
-			optionsPanel.style.display = isHidden ? "block" : "none";
+			optionsPanel.hidden = !optionsPanel.hidden;
+			optionsBtn.setAttribute("aria-expanded", String(!optionsPanel.hidden));
 		});
 
 		themeSelect.addEventListener("change", async () => {

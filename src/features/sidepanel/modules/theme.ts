@@ -27,17 +27,15 @@ export function applyTheme(theme: Settings["theme"]) {
 
 export function updateShowAllButton(
 	btn: HTMLButtonElement,
-	autoHighlight: boolean,
+	hasCurrentBookmarks: boolean,
 ) {
-	if (autoHighlight) {
-		btn.disabled = true;
-		btn.style.opacity = "0.5";
-		btn.style.cursor = "not-allowed";
-		btn.title = "Auto-highlight is enabled";
-	} else {
+	btn.textContent = "Highlight all";
+
+	if (hasCurrentBookmarks) {
 		btn.disabled = false;
-		btn.style.opacity = "1";
-		btn.style.cursor = "pointer";
-		btn.title = "Show all bookmarks on page";
+		btn.title = "Highlight all bookmarks in this chat";
+	} else {
+		btn.disabled = true;
+		btn.title = "No bookmarks in the current chat";
 	}
 }

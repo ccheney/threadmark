@@ -1,3 +1,4 @@
+import { urlsReferToSameThread } from "../../../shared/chatgpt";
 import { type Bookmark, initDB, type Thread } from "../../../shared/db";
 import { openBookmark } from "./navigation";
 import { decodeHtmlEntities, escapeHtml, truncate } from "./utils";
@@ -53,7 +54,9 @@ export async function syncSidepanelWithTab() {
 	if (currentUrl) {
 		// Find thread
 		const matchedThread = activeThreads.find(
-			(t) => currentUrl.includes(t.url) || t.url === currentUrl,
+			(t) =>
+				urlsReferToSameThread(currentUrl, t.threadId) ||
+				urlsReferToSameThread(currentUrl, t.url),
 		);
 		if (matchedThread) {
 			filterChat.value = matchedThread.threadId;
@@ -128,7 +131,7 @@ export async function loadBookmarks(query?: string, forceReload = false) {
 			matchesQuery =
 				b.text.toLowerCase().includes(lowerQuery) ||
 				threadTitle.includes(lowerQuery) ||
-				b.tags?.some((t) => t.toLowerCase().includes(lowerQuery));
+				(b.tags?.some((t) => t.toLowerCase().includes(lowerQuery)) ?? false);
 		}
 		if (!matchesQuery) return false;
 
@@ -304,8 +307,8 @@ export async function purgePageBookmarks() {
 		const bookmarks = await db.getAll("bookmarks");
 
 		// Filter bookmarks for this thread
-		const relevantBookmarks = bookmarks.filter(
-			(b) => currentUrl.includes(b.threadId) || b.threadId === currentUrl,
+		const relevantBookmarks = bookmarks.filter((b) =>
+			urlsReferToSameThread(currentUrl, b.threadId),
 		);
 
 		if (relevantBookmarks.length === 0) {

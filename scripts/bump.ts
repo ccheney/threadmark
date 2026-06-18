@@ -16,6 +16,18 @@ if (!validTypes.includes(bumpType)) {
 
 function bumpVersion(version: string, type: BumpType): string {
 	const [major, minor, patch] = version.split(".").map(Number);
+	if (
+		major === undefined ||
+		minor === undefined ||
+		patch === undefined ||
+		Number.isNaN(major) ||
+		Number.isNaN(minor) ||
+		Number.isNaN(patch)
+	) {
+		throw new Error(
+			`Invalid version "${version}". Expected major.minor.patch.`,
+		);
+	}
 
 	switch (type) {
 		case "major":

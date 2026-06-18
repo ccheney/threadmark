@@ -1,4 +1,5 @@
 import { type DBSchema, type IDBPDatabase, openDB } from "idb";
+import { getThreadIdForUrl, normalizeThreadUrl } from "../chatgpt";
 
 export interface Thread {
 	threadId: string; // Using URL as the logical ID for now, or a UUID
@@ -80,10 +81,10 @@ export async function saveBookmark(payload: BookmarkPayload) {
 	const db = await initDB();
 
 	// 1. Identify Thread
-	// Strategy: Use URL as a proxy for thread identity for now.
-	// In a real app, we might parse the UUID from the URL (e.g. /c/UUID)
-	const url = payload.url;
-	const threadId = url; // Simplified thread ID
+	// ChatGPT can mutate the visible URL with transient search/hash state. Store a
+	// stable conversation key when possible, with a normalized URL fallback.
+	const url = normalizeThreadUrl(payload.url);
+	const threadId = getThreadIdForUrl(payload.url);
 
 	// Check if thread exists, if not create it
 	let thread = await db.get("threads", threadId);

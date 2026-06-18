@@ -30,9 +30,12 @@ function handleSelectionChange() {
 		return;
 	}
 
-	// Only show bubble when selecting within chat messages (article elements in composer-parent)
+	// ChatGPT has used both article wrappers and data-message-author-role nodes
+	// for conversation turns. Accept either so DOM drift does not block capture.
 	const anchorNode = selection.anchorNode;
-	if (!anchorNode?.parentElement?.closest("article")) {
+	if (
+		!anchorNode?.parentElement?.closest("article, [data-message-author-role]")
+	) {
 		return;
 	}
 
@@ -201,7 +204,9 @@ function handleBookmarkClick(
 		if (allMatches.length > 1) {
 			const selRange = selection.getRangeAt(0);
 			for (let i = 0; i < allMatches.length; i++) {
-				const m = allMatches[i].range;
+				const match = allMatches[i];
+				if (!match) continue;
+				const m = match.range;
 				if (m.compareBoundaryPoints(Range.START_TO_START, selRange) === 0) {
 					occurrenceIndex = i;
 					break;

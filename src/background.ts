@@ -1,3 +1,4 @@
+import { urlsReferToSameThread } from "./shared/chatgpt";
 import { initDB, saveBookmark } from "./shared/db";
 
 // Enable side panel on action click
@@ -15,9 +16,8 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 		const url = message.url;
 		initDB().then(async (db) => {
 			const bookmarks = await db.getAll("bookmarks");
-			// Filter by threadId (which is currently the URL)
-			const matched = bookmarks.filter(
-				(b) => url.includes(b.threadId) || b.threadId === url,
+			const matched = bookmarks.filter((b) =>
+				urlsReferToSameThread(url, b.threadId),
 			);
 
 			sendResponse({ bookmarks: matched });

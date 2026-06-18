@@ -62,6 +62,7 @@ export function processPendingHighlights() {
 	// Iterate backwards so we can remove items as we find them
 	for (let i = pendingQueue.length - 1; i >= 0; i--) {
 		const item = pendingQueue[i];
+		if (!item) continue;
 		const context = {
 			prefix: item.prefix,
 			suffix: item.suffix,

@@ -1,3 +1,4 @@
+import { urlsReferToSameThread } from "../../../shared/chatgpt";
 import type { Bookmark, Thread } from "../../../shared/db";
 import { sendMessageWithRetry } from "./utils";
 
@@ -8,12 +9,21 @@ export function openBookmark(bookmark: Bookmark, thread?: Thread) {
 	}
 
 	const url = thread.url;
+	const highlightMessage = {
+		type: "HIGHLIGHT_REQUESTED",
+		payload: {
+			text: bookmark.text,
+			prefix: bookmark.prefix,
+			suffix: bookmark.suffix,
+			occurrence: bookmark.occurrence,
+		},
+	};
 
 	// Check if tab is already open
 	chrome.tabs.query({}, (tabs) => {
 		// Simple matching: exact URL or starts with URL
 		const existingTab = tabs.find(
-			(t) => t.url && (t.url === url || t.url.startsWith(url)),
+			(t) => t.url && urlsReferToSameThread(t.url, url),
 		);
 
 		if (existingTab?.id !== undefined) {
@@ -26,14 +36,25 @@ export function openBookmark(bookmark: Bookmark, thread?: Thread) {
 			// Send highlight request
 			// Wait a brief moment for tab switch, use retry
 			setTimeout(() => {
-				sendMessageWithRetry(tabId, {
-					type: "HIGHLIGHT_REQUESTED",
-					payload: { text: bookmark.text },
-				});
+				sendMessageWithRetry(tabId, highlightMessage);
 			}, 300);
 		} else {
-			chrome.tabs.create({ url: url }, (_tab) => {
-				// Listener for new tab load would go here in a full implementation
+			chrome.tabs.create({ url: url }, (tab) => {
+				if (tab.id === undefined) return;
+				const tabId = tab.id;
+				const sendWhenLoaded = (
+					updatedTabId: number,
+					changeInfo: { status?: string },
+				) => {
+					if (updatedTabId !== tabId || changeInfo.status !== "complete") {
+						return;
+					}
+
+					chrome.tabs.onUpdated.removeListener(sendWhenLoaded);
+					sendMessageWithRetry(tabId, highlightMessage, 10);
+				};
+
+				chrome.tabs.onUpdated.addListener(sendWhenLoaded);
 			});
 		}
 	});

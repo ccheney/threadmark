@@ -51,22 +51,26 @@ export function findAndHighlight(
 	}
 
 	// If occurrence is specified and valid, prioritize it
-	if (context.occurrence !== undefined && candidates[context.occurrence]) {
+	if (context.occurrence !== undefined) {
 		const target = candidates[context.occurrence];
-		const maxScore = Math.max(...candidates.map((c) => c.score));
+		if (target) {
+			const maxScore = Math.max(...candidates.map((c) => c.score));
 
-		if (target.score >= maxScore || maxScore === 0) {
-			candidates = [target];
+			if (target.score >= maxScore || maxScore === 0) {
+				candidates = [target];
+			}
 		}
 	}
 
 	// Pick the best candidate based on score
 	candidates.sort((a, b) => b.score - a.score);
 	const bestMatch = candidates[0];
+	if (!bestMatch) return false;
 	const createdSpans = highlightRange(bestMatch.range);
 
 	if (scroll && createdSpans.length > 0) {
 		const targetSpan = createdSpans[0];
+		if (!targetSpan) return true;
 		targetSpan.scrollIntoView({ behavior: "smooth", block: "center" });
 		targetSpan.style.transition = "box-shadow 0.3s";
 		targetSpan.style.boxShadow = "0 0 0 4px rgba(255, 215, 0, 0.5)";
@@ -247,7 +251,8 @@ export function findRanges(
 function mapStrippedToReal(original: string, strippedOffset: number): number {
 	let nonSpaceCount = 0;
 	for (let i = 0; i < original.length; i++) {
-		if (!/\s/.test(original[i])) {
+		const char = original[i];
+		if (char && !/\s/.test(char)) {
 			if (nonSpaceCount === strippedOffset) return i;
 			nonSpaceCount++;
 		}

@@ -1,3 +1,4 @@
+import { urlsReferToSameThread } from "../../shared/chatgpt";
 import { initDB } from "../../shared/db";
 import { loadBookmarks, syncSidepanelWithTab } from "./modules/bookmarks";
 import { initOptionsPanel } from "./modules/options";
@@ -64,14 +65,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 				const tabId = currentTab.id;
 
 				// Filter bookmarks for this thread (approx by URL)
-				const relevantBookmarks = bookmarks.filter(
-					(b) => currentUrl.includes(b.threadId) || b.threadId === currentUrl,
+				const relevantBookmarks = bookmarks.filter((b) =>
+					urlsReferToSameThread(currentUrl, b.threadId),
 				);
 
 				if (relevantBookmarks.length > 0 && tabId !== undefined) {
 					chrome.tabs.sendMessage(tabId, {
 						type: "HIGHLIGHT_BATCH",
-						payload: { texts: relevantBookmarks.map((b) => b.text) },
+						payload: { bookmarks: relevantBookmarks },
 					});
 				}
 			});

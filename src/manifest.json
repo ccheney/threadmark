@@ -1,8 +1,8 @@
 {
 	"manifest_version": 3,
-	"name": "Threadmark",
+	"name": "Threadmark: ChatGPT Bookmarks & Highlights",
 	"version": "1.0.3",
-	"description": "Bookmark, highlight, and organize specific text snippets within ChatGPT conversations. Never lose a golden answer again.",
+	"description": "Save exact ChatGPT snippets as searchable, local bookmarks with tags and re-highlighting.",
 	"permissions": ["activeTab", "sidePanel", "storage"],
 	"host_permissions": ["*://*.chatgpt.com/*"],
 	"background": {

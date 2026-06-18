@@ -1,5 +1,7 @@
 # Threadmark
 
+![Threadmark promo](assets/store/promo-small-tile-440x280.png)
+
 Threadmark is a Chrome extension designed for power users of ChatGPT. It allows you to highlight, bookmark, and organize specific snippets of text within your ChatGPT conversations, creating a local "clipbook" of your most valuable AI interactions.
 
 [Threadmark on Chrome Web Store](https://chromewebstore.google.com/detail/threadmark/klimdfofgoajhbohddeaigbelapjgkom)

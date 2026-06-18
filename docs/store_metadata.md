@@ -4,35 +4,42 @@
 Threadmark: ChatGPT Bookmarks & Highlights
 
 ## Summary (Short Description)
-Bookmark, highlight, and organize specific text snippets within ChatGPT conversations. Never lose a golden answer again.
+Save exact ChatGPT snippets as searchable, local bookmarks with tags and re-highlighting.
 
 ## Description (Long Description)
 
-**Stop scrolling through endless chat history.**
+Stop scrolling through long ChatGPT conversations.
 
-Threadmark helps you capture, organize, and instantly recall the exact information you need from your ChatGPT conversations. Instead of saving entire chats or manually copying text to other apps, Threadmark lets you treat ChatGPT like a long-term knowledge base.
+Threadmark lets you save the exact parts of a ChatGPT answer you want to keep, tag them, search them later, and jump back to the original passage when you need it again.
 
 ### Key Features
 
-🔖 **Precision Bookmarking**
-Highlight any text in a conversation and save it with a single click. Capture specific code snippets, prompts, or explanations without the noise.
+**Precision bookmarking**
+Highlight text in ChatGPT and save the snippet directly from the selection toolbar.
 
-📍 **Smart Re-anchoring**
-Clicking a bookmark doesn't just open the chat—it magically scrolls to the exact location and re-highlights your saved text, even in super-long conversations or after the page has changed.
+**Tags for recall**
+Add tags while saving so useful prompts, code snippets, explanations, and research findings stay organized.
 
-📝 **Context & Notes**
-Add your own tags and notes to every bookmark. Remind yourself *why* you saved something or link related ideas across different chats.
+**Searchable side panel**
+Browse bookmarks for the current chat or your full library. Search by saved text, chat title, or tag.
 
-🔎 **Powerful Side Panel**
-Browse your entire library of saved snippets right alongside your chat. Filter by tags, search through your notes, or find that one specific prompt from three weeks ago instantly.
+**Return to the exact passage**
+Open a bookmark and Threadmark reopens the chat, scrolls to the saved snippet, and highlights it again.
 
-🔒 **Private & Local-First**
-Your data stays on your device. Threadmark stores everything locally, ensuring your private conversations remain private.
+**Private and local-first**
+Threadmark stores bookmarks locally in your browser. Your saved snippets are not sent to an external service.
 
-### Perfect for
-*   **Developers:** Save useful code blocks and debugging tips.
-*   **Researchers:** Track key insights and sources across long sessions.
-*   **Learners:** Build a personal study guide from your AI interactions.
-*   **Power Users:** Curate a library of your best prompts and their results.
+Built for developers, researchers, learners, and ChatGPT power users who want their best AI answers to stay findable.
 
-**Get Threadmark and turn your chat history into a searchable knowledge library.**
+## Store Assets
+
+### Screenshots
+- `assets/store/screenshot-01-save-exact-answers-1280x800.png`
+- `assets/store/screenshot-02-save-snippets-toolbar-1280x800.png`
+- `assets/store/screenshot-03-tag-answers-1280x800.png`
+- `assets/store/screenshot-04-search-bookmark-library-1280x800.png`
+- `assets/store/screenshot-05-jump-back-exact-passage-1280x800.png`
+
+### Promo Tiles
+- `assets/store/promo-small-tile-440x280.png`
+- `assets/store/promo-marquee-tile-1400x560.png`

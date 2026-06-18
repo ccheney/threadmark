@@ -16,6 +16,10 @@ const chatFixture = `<!doctype html>
 				<p id="answer">Before important regression answer after.</p>
 				<p>Another turn with repeated text for anchoring checks.</p>
 			</div>
+			<div id="chatgpt-selection-toolbar">
+				<button type="button">Ask ChatGPT</button>
+				<button type="button">Start writing</button>
+			</div>
 		</main>
 	</body>
 </html>`;
@@ -33,6 +37,10 @@ const edgeFixtures: Record<string, string> = {
 				<p>Symbol-heavy target: C++ && $@ -> /tmp/threadmark [ok].</p>
 				<p>Inline <strong>multi-node</strong> answer crosses formatting.</p>
 			</div>
+			<div id="chatgpt-selection-toolbar">
+				<button type="button">Ask ChatGPT</button>
+				<button type="button">Start writing</button>
+			</div>
 		</main>
 	</body>
 </html>`,
@@ -47,6 +55,10 @@ const edgeFixtures: Record<string, string> = {
 				<p>First paragraph closes.</p><p>Second paragraph opens.</p>
 				<p>Repeated anchor belongs here.</p>
 				<p>Repeated anchor belongs elsewhere.</p>
+			</div>
+			<div id="chatgpt-selection-toolbar">
+				<button type="button">Ask ChatGPT</button>
+				<button type="button">Start writing</button>
 			</div>
 		</main>
 	</body>
@@ -166,17 +178,15 @@ async function saveSelectedText(
 	occurrence = 0,
 ) {
 	await selectTextInDocument(page, text, occurrence);
-	await expect(page.locator("#threadmark-bubble")).toBeVisible();
-	await page.locator("#threadmark-bubble input").fill(tag);
-	const saved = await page.evaluate(() => {
-		const button = document.querySelector("#threadmark-bubble button");
-		button?.dispatchEvent(
-			new MouseEvent("mousedown", { bubbles: true, cancelable: true }),
-		);
-		return Boolean(button);
-	});
-	expect(saved).toBe(true);
-	await expect(page.locator("#threadmark-bubble")).toHaveCount(0);
+	await expect(page.locator("#threadmark-native-button")).toBeVisible();
+	await page.locator("#threadmark-native-button").click();
+	await expect(page.locator("#threadmark-tag-tray")).toBeVisible();
+	await page.locator("#threadmark-tag-tray input").fill(tag);
+	await page
+		.locator("#threadmark-tag-tray button", { hasText: "Save" })
+		.click();
+	await expect(page.locator("#threadmark-tag-tray")).toHaveCount(0);
+	await expect.poll(() => highlightedText(page)).toContain(text);
 }
 
 async function highlightedText(page: import("@playwright/test").Page) {
@@ -185,6 +195,34 @@ async function highlightedText(page: import("@playwright/test").Page) {
 			.map((node) => node.textContent ?? "")
 			.join(""),
 	);
+}
+
+async function activateChatTab(
+	sidepanel: import("@playwright/test").Page,
+	pathFragment: string,
+) {
+	await sidepanel.evaluate((pathFragment) => {
+		return new Promise<void>((resolve, reject) => {
+			chrome.tabs.query({}, (tabs) => {
+				const chatTab = tabs.find((tab) => tab.url?.includes(pathFragment));
+				if (!chatTab?.id) {
+					reject(
+						new Error(`Could not find ChatGPT fixture tab: ${pathFragment}`),
+					);
+					return;
+				}
+
+				chrome.tabs.update(chatTab.id, { active: true }, () => {
+					if (chrome.runtime.lastError) {
+						reject(new Error(chrome.runtime.lastError.message));
+						return;
+					}
+
+					resolve();
+				});
+			});
+		});
+	}, pathFragment);
 }
 
 test("captures, persists, re-anchors, and reopens a ChatGPT bookmark", async ({
@@ -211,9 +249,15 @@ test("captures, persists, re-anchors, and reopens a ChatGPT bookmark", async ({
 	).toContainText("important regression answer");
 
 	await selectTextById(page, "answer", "important regression answer");
-	await expect(page.locator("#threadmark-bubble")).toBeVisible();
-	await page.locator("#threadmark-bubble input").fill("regression, playwright");
-	await page.locator("#threadmark-bubble button", { hasText: "Save" }).click();
+	await expect(page.locator("#threadmark-native-button")).toBeVisible();
+	await page.locator("#threadmark-native-button").click();
+	await expect(page.locator("#threadmark-tag-tray")).toBeVisible();
+	await page
+		.locator("#threadmark-tag-tray input")
+		.fill("regression, playwright");
+	await page
+		.locator("#threadmark-tag-tray button", { hasText: "Save" })
+		.click();
 
 	await expect(page.locator(".threadmark-highlight")).toContainText(
 		"important regression answer",
@@ -224,13 +268,35 @@ test("captures, persists, re-anchors, and reopens a ChatGPT bookmark", async ({
 		`chrome-extension://${extensionId}/features/sidepanel/sidepanel.html`,
 	);
 
-	await page.bringToFront();
+	await activateChatTab(sidepanel, "/c/playwright-thread");
+	await expect(sidepanel.locator("#scope-current")).toContainText("This chat");
+	await expect(sidepanel.locator("#current-count")).toHaveText("1");
+	await expect(sidepanel.locator("#library-count")).toHaveText("1");
+	await expect(sidepanel.locator("#scope-heading")).toContainText(
+		"Playwright Chat Fixture",
+	);
+	await expect(sidepanel.locator("#show-all-btn")).toBeEnabled();
 	await expect(sidepanel.locator(".bookmark-item")).toContainText(
 		"important regression answer",
 	);
 	await expect(
 		sidepanel.locator(".bookmark-tag", { hasText: "#regression" }),
 	).toBeVisible();
+	await expect(sidepanel.locator(".open-btn")).toBeVisible();
+
+	await sidepanel.locator("#filter-toggle-btn").click();
+	await expect(sidepanel.locator("#filter-popover")).toBeVisible();
+	await expect(sidepanel.locator("#filter-chat-row")).toBeHidden();
+	await sidepanel.locator("#filter-toggle-btn").click();
+
+	await sidepanel.locator("#options-toggle-btn").click();
+	await expect(sidepanel.locator("#options-panel")).toBeVisible();
+	await expect(sidepanel.locator("#options-panel")).toContainText(
+		"Display and behavior",
+	);
+	await expect(sidepanel.locator("#purge-btn")).toBeHidden();
+	await sidepanel.locator(".danger-zone summary").click();
+	await expect(sidepanel.locator("#purge-btn")).toBeVisible();
 
 	await page.goto(sameThreadUrl);
 	await expect(page.locator(".threadmark-highlight")).toContainText(
@@ -252,28 +318,7 @@ test("captures, persists, re-anchors, and reopens a ChatGPT bookmark", async ({
 	});
 	await expect(page.locator(".threadmark-highlight")).toHaveCount(0);
 
-	await sidepanel.evaluate(() => {
-		return new Promise<void>((resolve, reject) => {
-			chrome.tabs.query({}, (tabs) => {
-				const chatTab = tabs.find((tab) =>
-					tab.url?.includes("/c/playwright-thread"),
-				);
-				if (!chatTab?.id) {
-					reject(new Error("Could not find ChatGPT fixture tab"));
-					return;
-				}
-
-				chrome.tabs.update(chatTab.id, { active: true }, () => {
-					if (chrome.runtime.lastError) {
-						reject(new Error(chrome.runtime.lastError.message));
-						return;
-					}
-
-					resolve();
-				});
-			});
-		});
-	});
+	await activateChatTab(sidepanel, "/c/playwright-thread");
 	const activeTabUrl = await sidepanel.evaluate(() => {
 		return new Promise<string | undefined>((resolve) => {
 			chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
@@ -323,6 +368,7 @@ test("captures, persists, re-anchors, and reopens a ChatGPT bookmark", async ({
 
 test("captures and re-anchors varied snippets across conversations", async ({
 	context,
+	extensionId,
 }) => {
 	await context.route("https://chatgpt.com/**", async (route) => {
 		const url = new URL(route.request().url());
@@ -375,4 +421,34 @@ test("captures and re-anchors varied snippets across conversations", async ({
 	await expect
 		.poll(() => highlightedText(page))
 		.toContain("First paragraph closes.Second paragraph opens.Repeated anchor");
+
+	const sidepanel = await context.newPage();
+	await sidepanel.goto(
+		`chrome-extension://${extensionId}/features/sidepanel/sidepanel.html`,
+	);
+	await activateChatTab(sidepanel, "/c/playwright-edge-two");
+
+	await expect(sidepanel.locator("#current-count")).toHaveText("2");
+	await expect(sidepanel.locator("#library-count")).toHaveText("5");
+	await expect(sidepanel.locator(".bookmark-item")).toHaveCount(2);
+
+	await sidepanel.locator("#scope-library").click();
+	await expect(sidepanel.locator("#scope-library")).toHaveClass(/is-active/);
+	await expect(sidepanel.locator("#back-to-current-btn")).toBeVisible();
+	await sidepanel.locator("#filter-toggle-btn").click();
+	await expect(sidepanel.locator("#filter-chat-row")).toBeVisible();
+	await sidepanel.locator("#filter-toggle-btn").click();
+	await expect(sidepanel.locator(".thread-group-heading")).toHaveText([
+		"Edge Conversation Two",
+		"Edge Conversation One",
+	]);
+	await expect(sidepanel.locator(".bookmark-item")).toHaveCount(5);
+	await expect(sidepanel.locator(".bookmark-thread").first()).toHaveText(
+		"Edge Conversation Two",
+	);
+	await expect(sidepanel.locator(".open-btn").first()).toBeVisible();
+
+	await sidepanel.locator("#back-to-current-btn").click();
+	await expect(sidepanel.locator("#scope-current")).toHaveClass(/is-active/);
+	await expect(sidepanel.locator(".bookmark-item")).toHaveCount(2);
 });

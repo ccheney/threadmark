@@ -30,6 +30,8 @@ function installDom(html: string) {
 		MouseEvent: window.MouseEvent,
 		ResizeObserver: NoopResizeObserver,
 	});
+	Reflect.deleteProperty(globalThis, "LanguageModel");
+	Reflect.deleteProperty(globalThis, "Summarizer");
 
 	if (!window.Range.prototype.getBoundingClientRect) {
 		window.Range.prototype.getBoundingClientRect = () =>
@@ -65,6 +67,53 @@ function selectText(selector: string, selectedText: string) {
 	throw new Error(`Could not find text: ${selectedText}`);
 }
 
+function installPromptTags(tags: string[]) {
+	Object.assign(globalThis, {
+		LanguageModel: {
+			availability: async () => "available",
+			create: async () => ({
+				prompt: async () => JSON.stringify(tags),
+				destroy: () => {},
+			}),
+		},
+	});
+}
+
+function installSummarizerTags(summary: string) {
+	Object.assign(globalThis, {
+		LanguageModel: {
+			availability: async () => "unavailable",
+			create: async () => {
+				throw new Error("Prompt API should not be used");
+			},
+		},
+		Summarizer: {
+			availability: async () => "available",
+			create: async () => ({
+				summarize: async () => summary,
+				destroy: () => {},
+			}),
+		},
+	});
+}
+
+async function waitFor(assertion: () => void) {
+	const start = Date.now();
+	let lastError: unknown;
+
+	while (Date.now() - start < 1000) {
+		try {
+			assertion();
+			return;
+		} catch (error) {
+			lastError = error;
+			await new Promise((resolve) => setTimeout(resolve, 10));
+		}
+	}
+
+	throw lastError;
+}
+
 describe("capture bubble", () => {
 	beforeEach(() => {
 		installDom(`
@@ -72,19 +121,76 @@ describe("capture bubble", () => {
 				<div data-message-author-role="assistant">
 					<p>The selected authenticated ChatGPT text appears here.</p>
 				</div>
+				<div id="chatgpt-selection-toolbar">
+					<button type="button">Ask ChatGPT</button>
+					<button type="button">Start writing</button>
+				</div>
 				<section id="outside">Outside text should not show a bubble.</section>
 			</main>
 		`);
 		initBubbleListener();
 	});
 
-	test("appears for selections inside current ChatGPT message markup", () => {
+	test("adds a Threadmark button to ChatGPT's native selection toolbar", () => {
 		selectText("[data-message-author-role='assistant']", "authenticated");
 
-		expect(document.querySelector("#threadmark-bubble")).not.toBeNull();
-		expect(document.querySelector("#threadmark-bubble")?.textContent).toContain(
-			"Save",
-		);
+		expect(document.querySelector("#threadmark-native-button")).not.toBeNull();
+		expect(
+			document.querySelector("#chatgpt-selection-toolbar")?.textContent,
+		).toContain("Ask ChatGPT");
+		expect(
+			document.querySelector("#chatgpt-selection-toolbar")?.textContent,
+		).toContain("Start writing");
+		expect(
+			document.querySelector("#chatgpt-selection-toolbar")?.textContent,
+		).toContain("Threadmark");
+		expect(document.querySelector("#threadmark-bubble")).toBeNull();
+	});
+
+	test("opens a compact tag tray without local fallback suggestions", () => {
+		selectText("[data-message-author-role='assistant']", "authenticated");
+
+		(
+			document.querySelector("#threadmark-native-button") as HTMLButtonElement
+		).click();
+
+		expect(document.querySelector("#threadmark-tag-tray")).not.toBeNull();
+		expect(
+			document.querySelector("#threadmark-tag-tray")?.textContent,
+		).toContain("Save");
+		expect(
+			document.querySelector("#threadmark-tag-tray")?.textContent,
+		).not.toContain("#authenticated");
+	});
+
+	test("uses the Prompt API for suggested chips", async () => {
+		installPromptTags(["hose-bib", "quick-connect", "gas-grill"]);
+		selectText("[data-message-author-role='assistant']", "authenticated");
+
+		(
+			document.querySelector("#threadmark-native-button") as HTMLButtonElement
+		).click();
+
+		await waitFor(() => {
+			expect(
+				document.querySelector("#threadmark-tag-tray")?.textContent,
+			).toContain("#quick-connect");
+		});
+	});
+
+	test("falls back to the Summarizer API for suggested chips", async () => {
+		installSummarizerTags("- hose bib\n- quick connect\n- gas grill");
+		selectText("[data-message-author-role='assistant']", "authenticated");
+
+		(
+			document.querySelector("#threadmark-native-button") as HTMLButtonElement
+		).click();
+
+		await waitFor(() => {
+			expect(
+				document.querySelector("#threadmark-tag-tray")?.textContent,
+			).toContain("#hose-bib");
+		});
 	});
 
 	test("does not appear for selections outside chat messages", () => {

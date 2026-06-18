@@ -1,7 +1,7 @@
 {
 	"manifest_version": 3,
 	"name": "Threadmark: ChatGPT Bookmarks & Highlights",
-	"version": "1.0.3",
+	"version": "1.0.4",
 	"description": "Save exact ChatGPT snippets as searchable, local bookmarks with tags and re-highlighting.",
 	"permissions": ["activeTab", "sidePanel", "storage"],
 	"host_permissions": ["*://*.chatgpt.com/*"],
